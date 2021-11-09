@@ -2,19 +2,27 @@
 (in-package #:clorg)
 
 (defparameter *employees*
-  '((:name "The Top Boss" :role "CEO"
-     :reports ((:name "Joe Strummer" :role "Chief Clash Officer"
-                      :reports ((:name "Mick Jones" :role "Jonesy / Hooks")
-                                (:name "Paul Simonon" :role "Bass and Occasional Vocals")
-                                (:name "Topper Headon" :role "Skins")))
-               (:name "Keith Richards" :role "Chief Guitaristic Officer"
-                      :reports ((:name "Mick Jagger" :role "Singer / Dancer"
-                                       :reports ((:name "Charlie Watts" :role "RIP")
-                                                 (:name "Darryl" :role "Bass")))))
-               (:name "Sting" :role "The Face")
+  '((:name "Ursula Von Der Leyen" :role "President of The European Comission"
+     :reports ((:name "Vera Jourova"
+                      :role "Vice President"
+                      :subrole "Values and Transparency"
+                      :reports ((:name "Dider Reynders"
+                                       :role "Comissioner"
+                                       :subrole "Justice")))
                ;; add an extra "reports" layer to get this to drop down one level
                (:reports
-                ((:name "Ray Davies" :role "Vocals and Guitar")))))))
+                ((:name "Maro Sefcovic"
+                        :role "Vice President")))
+               (:name "Frans Timmerman"
+                      :role "First Executive Vice President")
+               (:name "Margaritis Schinas"
+                      :role "Vice President"
+                      :reports ((:name "Mariya Gabriel"
+                                       :role "Commissioner")))
+               (:name "Margrethe Vesteger"
+                      :role "Executive Vice President")
+              (:name "Valdis Dombrovskis"
+                      :role "Executive Vice President")))))
 
 (defparameter *org-chart* (make-org-chart *employees*))
 

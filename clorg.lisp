@@ -28,38 +28,51 @@
 (define-presentation-method present (org-chart-node (type org-chart-node) pane view &key)
   (let* ((org-chart (pane-org-chart pane))
          (emp (get-employee org-chart org-chart-node)))
-    (let ((sizes (mapcar (lambda (x) (multiple-value-list (text-size pane x)))
+    (let ((sizes (mapcar (lambda (x)
+                           (if x
+                               (multiple-value-list (text-size pane x))
+                               (list 0 0)))
                          (list (name emp)
-                               (role emp)))))
+                               (role emp)
+                               (subrole emp)))))
       (let* ((widths (mapcar #'first sizes))
              (max-width (apply #'max widths))
              (heights (mapcar #'second sizes))
-             (total-height (apply #'+ heights))
              (offsets (running-sum heights))
-             (left-margin 12)
-             (right-margin 12)
-             (top-margin 6)
-             (bottom-margin 6)
-             (name (name emp)))
+             (name (name emp))
+             (role (role emp))
+             (subrole (subrole emp))
+             (border-color +blue+))
         (when name
-          (draw-rectangle* pane
-                           0
-                           0
-                           (+ max-width left-margin right-margin)
-                           (+ total-height top-margin bottom-margin)
-                           :ink +red+ :filled nil :line-thickness 2)
-          (draw-text* pane name
-                      (+ (/ max-width 2) left-margin)
-                      (+ top-margin (first offsets))
-                      :align-x :center
-                      :align-y :bottom)
-          (terpri pane)
-          (draw-text* pane (role emp)
-                      (+ (/ max-width 2) left-margin)
-                      (+ top-margin (second offsets))
-                      :align-x :center
-                      :align-y :bottom)
-          (terpri pane))))))
+          (climi::invoke-surrounding-output-with-border
+	   pane
+           (lambda (pane)
+             (draw-text* pane name
+                         (/ max-width 2)
+                         (first offsets)
+                         :align-x :center
+                         :align-y :bottom)
+             (when role
+               (draw-text* pane (role emp)
+                           (/ max-width 2)
+                           (second offsets)
+                           :align-x :center
+                           :align-y :bottom))
+             (when subrole
+               (draw-text* pane (subrole emp)
+                           (/ max-width 2)
+                           (third offsets)
+                           :align-x :center
+                           :align-y :bottom)))
+           :shape :rectangle
+           :filled nil
+           :ink border-color
+           :outline-ink border-color
+           :line-thickness 3
+           :padding-left 12
+           :padding-right 12
+           :padding-top 4
+           :padding-bottom 4))))))
 
 (define-presentation-type org-chart ())
 

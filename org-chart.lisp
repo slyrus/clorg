@@ -4,6 +4,7 @@
 (defclass org-item ()
   ((name :accessor name :initarg :name :initform nil)
    (role :accessor role :initarg :role :initform nil)
+   (subrole :accessor subrole :initarg :subrole :initform nil)
    (note :accessor note :initarg :note :initform nil))
   (:documentation "Base class of items to go on an org chart"))
 
@@ -18,9 +19,9 @@
   (gethash id (org-chart-hash-table org-chart)))
 
 (defun add-employee (org-chart emp-spec)
-  (with-assoc:with-assoc (name role note reports)
+  (with-assoc:with-assoc (name role subrole note reports)
       (alexandria:plist-alist emp-spec)
-    (let* ((emp (make-instance 'employee :name name :role role :note note))
+    (let* ((emp (make-instance 'employee :name name :role role :subrole subrole :note note))
            (emp-id (org-chart-employee-counter org-chart)))
       (setf (gethash emp-id (org-chart-hash-table org-chart)) emp)
       (incf (org-chart-employee-counter org-chart))
