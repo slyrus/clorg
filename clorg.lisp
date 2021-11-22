@@ -25,54 +25,60 @@
 
 (define-presentation-type org-chart-node ())
 
+(defparameter *box-color* (clim:make-rgb-color 0.84 0.88 0.89))
+
+(define-presentation-method present (emp (type employee) pane view &key)
+  (let ((sizes (mapcar (lambda (x)
+                         (if x
+                             (multiple-value-list (text-size pane x))
+                             (list 0 0)))
+                       (list (name emp)
+                             (role emp)
+                             (subrole emp)))))
+    (let* ((widths (mapcar #'first sizes))
+           (max-width (apply #'max widths))
+           (heights (mapcar #'second sizes))
+           (offsets (running-sum heights))
+           (name (name emp))
+           (role (role emp))
+           (subrole (subrole emp)))
+      (when name
+        (climi::invoke-surrounding-output-with-border
+	 pane
+         (lambda (pane)
+           (draw-text* pane name
+                       (/ max-width 2)
+                       (first offsets)
+                       :align-x :center
+                       :align-y :bottom
+                       :text-face :bold)
+           (when role
+             (draw-text* pane (role emp)
+                         (/ max-width 2)
+                         (second offsets)
+                         :align-x :center
+                         :align-y :bottom))
+           (when subrole
+             (draw-text* pane (subrole emp)
+                         (/ max-width 2)
+                         (third offsets)
+                         :align-x :center
+                         :align-y :bottom
+                         :text-face :italic)))
+         :shape :rectangle
+         :filled t
+         :ink *box-color*
+         :outline-ink *box-color*
+         :line-thickness 3
+         :padding-left 12
+         :padding-right 12
+         :padding-top 4
+         :padding-bottom 4)))))
+
 (define-presentation-method present (org-chart-node (type org-chart-node) pane view &key)
   (let* ((org-chart (pane-org-chart pane))
          (emp (get-employee org-chart org-chart-node)))
-    (let ((sizes (mapcar (lambda (x)
-                           (if x
-                               (multiple-value-list (text-size pane x))
-                               (list 0 0)))
-                         (list (name emp)
-                               (role emp)
-                               (subrole emp)))))
-      (let* ((widths (mapcar #'first sizes))
-             (max-width (apply #'max widths))
-             (heights (mapcar #'second sizes))
-             (offsets (running-sum heights))
-             (name (name emp))
-             (role (role emp))
-             (subrole (subrole emp))
-             (border-color +blue+))
-        (when name
-          (climi::invoke-surrounding-output-with-border
-	   pane
-           (lambda (pane)
-             (draw-text* pane name
-                         (/ max-width 2)
-                         (first offsets)
-                         :align-x :center
-                         :align-y :bottom)
-             (when role
-               (draw-text* pane (role emp)
-                           (/ max-width 2)
-                           (second offsets)
-                           :align-x :center
-                           :align-y :bottom))
-             (when subrole
-               (draw-text* pane (subrole emp)
-                           (/ max-width 2)
-                           (third offsets)
-                           :align-x :center
-                           :align-y :bottom)))
-           :shape :rectangle
-           :filled nil
-           :ink border-color
-           :outline-ink border-color
-           :line-thickness 3
-           :padding-left 12
-           :padding-right 12
-           :padding-top 4
-           :padding-bottom 4))))))
+    (present emp 'employee)))
 
 (define-presentation-type org-chart ())
 
@@ -83,11 +89,13 @@
     (format-graph-from-roots
      (list 1)
      (lambda (node s)
-       (present node 'org-chart-node :stream s))
+       (present (get-employee org-chart node) 'employee :stream s))
      #'node-children
      :arc-drawer #'org-chart-arc-drawer
      :arc-drawing-options (list :ink +gray20+ :line-thickness 2)
-     :orientation (pane-orientation pane)
+     :orientation (typecase pane
+                    (clorg-pane (pane-orientation pane))
+                    (t :vertical))
      :stream pane))))
 
 (defclass clorg-pane (application-pane)
@@ -116,3 +124,17 @@
                         :initial-bindings `((*default-server-path* . ',*default-server-path*)))
         (run-frame-top-level frame))
     frame))
+
+(defun write-org-chart-to-pdf-file (org-chart file
+                                    &key
+                                      (device-type '(1600 1000)))
+  (with-open-file (file-stream file :direction :output
+                               :if-exists :supersede
+                               :element-type '(unsigned-byte 8))
+    (clim-pdf:with-output-to-pdf-stream
+        (stream file-stream
+                :header-comments '(:title (name task))
+                :scale-to-fit t
+                :device-type device-type)
+      (let ((*standard-output* stream))
+        (present org-chart 'org-chart)))))
