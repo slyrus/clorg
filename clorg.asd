@@ -5,5 +5,5 @@
   :components
   ((:file "package")
    (:file "org-chart")
-   (:file "demo-org-chart")
-   (:file "clorg")))
+   (:file "clorg")
+   (:file "demo-org-chart")))

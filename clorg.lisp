@@ -75,6 +75,10 @@
          :padding-top 4
          :padding-bottom 4)))))
 
+(defclass clorg-pane (application-pane)
+  ((org-chart :initarg :org-chart :initform nil :accessor pane-org-chart)
+   (orientation :initarg :orientation :initform :vertical :accessor pane-orientation)))
+
 (define-presentation-method present (org-chart-node (type org-chart-node) pane view &key)
   (let* ((org-chart (pane-org-chart pane))
          (emp (get-employee org-chart org-chart-node)))
@@ -97,10 +101,6 @@
                     (clorg-pane (pane-orientation pane))
                     (t :vertical))
      :stream pane))))
-
-(defclass clorg-pane (application-pane)
-  ((org-chart :initarg :org-chart :initform nil :accessor pane-org-chart)
-   (orientation :initarg :orientation :initform :vertical :accessor pane-orientation)))
 
 (define-application-frame clorg-frame ()
   ((org-chart :accessor clorg-frame-org-chart :initarg :org-chart))
@@ -137,4 +137,4 @@
                 :scale-to-fit t
                 :device-type device-type)
       (let ((*standard-output* stream))
-        (present org-chart 'org-chart)))))
+        (present org-chart)))))

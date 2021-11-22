@@ -1,7 +1,12 @@
 
-(in-package #:clorg)
+(defpackage #:clorg-demo
+  (:use #:clim #:clim-lisp #:clim-extensions)
+  (:export #:*eu-employees*
+           #:*eu-org-chart*))
 
-(defparameter *employees*
+(in-package #:clorg-demo)
+
+(defparameter *eu-employees*
   '((:name "Ursula Von Der Leyen" :role "President of The European Comission"
      :reports ((:name "Vera Jourova"
                       :role "Vice President"
@@ -24,5 +29,5 @@
               (:name "Valdis Dombrovskis"
                       :role "Executive Vice President")))))
 
-(defparameter *org-chart* (make-org-chart *employees*))
+(defparameter *eu-org-chart* (clorg:make-org-chart *eu-employees*))
 
