@@ -1,0 +1,24 @@
+* clorg - a clim organization chart viewer
+
+clorg is a toy application written in McCLIM for the display of
+organization charts (affectionately known as org charts).
+
+* clorg demo
+
+#+begin_src lisp :session
+
+(asdf:load-system #:clorg)
+
+(defpackage #:clorg-scratch
+  (:use #:clim #:clim-lisp #:clim-extensions))
+
+(in-package #:clorg-scratch)
+
+(with-room-for-graphics (*standard-output* :first-quadrant nil)
+  (present clorg-demo:*eu-org-chart*))
+
+(clorg::write-org-chart-to-pdf-file clorg-demo:*eu-org-chart* #p"/tmp/eu-org-chart.pdf")
+
+(clorg::clorg-frame clorg-demo:*eu-org-chart*)
+
+#+end_src
